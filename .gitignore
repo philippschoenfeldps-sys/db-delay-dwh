@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Secrets and local environment
+.env
+.venv/
+
+# Local data exports
+*.xml
