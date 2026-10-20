@@ -1,13 +1,22 @@
+# Docker Compose - Run PostgreSQL locally
+
+# Independent of the data: this only describes "a PostgreSQL 17 server with these credentials."
+# This tables come from sql/01_staging.sql.
+
+#   docker compose up -d    start (first time: downloads the image)
+#   docker compose ps       status
+#   docker compose down     stop (data stays in the volume)
 services:
   postgres:
+    # Name for this service
     image: postgres:17 # Pinned major version for reproducibility
-    container_name: bahn-postgres
+    container_name: bahn-postgres # Name -> easy to address with docker exec
     restart: unless-stopped # Restart automatically after reboot
-    env_file: .env # Reads POSTGRES_USER / PASSWORD / DB
+    env_file: .env # Reads POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB
     ports:
       - "${POSTGRES_PORT}:5432" # Host port : container port
     volumes:
       - pgdata:/var/lib/postgresql/data # Persist data outside the container
 
 volumes:
-  pgdata: # named volume, survives "docker compose down"
+  pgdata: # Named volume, survives "docker compose down"
