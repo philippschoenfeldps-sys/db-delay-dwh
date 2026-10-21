@@ -226,3 +226,6 @@ logs/
 
 # Local data exports
 *.xml
+
+# Personal SQL playground
+sql/scratch.sql

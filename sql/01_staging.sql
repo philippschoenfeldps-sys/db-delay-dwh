@@ -1,4 +1,4 @@
--- Staging - Staging Tables for the Raw API Data 
+-- Staging Layer - Staging Tables for the Raw API Data 
 
 -- Designed from the inventory of the raw samples:
 --  samples/*.xml   -> ingestion/inspect_xml.py -> docs/DATA_DICTIONARY.md
@@ -15,7 +15,7 @@
 --  Repeats         the same stop arrives in several requests -> it is updated, not duplicated (first_seen_at / last_seen_at track this)
 
 -- Run it in the database bahn_dwh, e.g.: psql -d bahn_dwh -f sql/01_staging.sql
--- (the script is idempotent: running it again changes nothing).
+-- (the script is idempotent: running it again changes nothing)
 
 -- Separate schema = separate "namespace" for raw data.
 -- Later layers (core, mart) get their own schemas.
