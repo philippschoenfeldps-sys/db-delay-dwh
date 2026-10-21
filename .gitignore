@@ -222,6 +222,7 @@ __marimo__/
 # Secrets and local environment
 .env
 .venv/
+logs/
 
 # Local data exports
 *.xml
