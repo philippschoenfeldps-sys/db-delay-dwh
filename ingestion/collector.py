@@ -136,7 +136,9 @@ INSERT INTO staging.ingestion_log (
 # --- HELPERS ---
 
 def load_config() -> dict:
-    """Read credentials and DB settings from .env and stop early if something is missing."""
+    """
+    Read credentials and DB settings from .env and stop early if something is missing.
+    """
     load_dotenv()
     required = ["DB_CLIENT_ID", "DB_API_KEY", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB"]
     missing = [key for key in required if not os.getenv(key)]
@@ -157,7 +159,9 @@ def load_config() -> dict:
     }
 
 def build_session(cfg: dict) -> requests.Session:
-    """One HTTP session for all requests: reuses the connection and sets auth headers once."""
+    """
+    One HTTP session for all requests: reuses the connection and sets auth headers once.
+    """
     session = requests.Session()
     session.headers.update({
         "DB-Client-Id": cfg["client_id"],
@@ -168,14 +172,18 @@ def build_session(cfg: dict) -> requests.Session:
     return session
 
 def fetch(session: requests.Session, path: str) -> requests.Response:
-    """GET request against the Timetables API, followed by a short pause (rate limit)."""
+    """
+    GET request against the Timetables API, followed by a short pause (rate limit).
+    """
     try:
         return session.get(f"{BASE_URL}/{path}", timeout=REQUEST_TIMEOUT_SEC)
     finally:
         time.sleep(REQUEST_PAUSE_SEC)
 
 def attr(element, name):
-    """Safe attribute access: returns None if the element itself does not exist."""
+    """
+    Safe attribute access: returns None if the element itself does not exist.
+    """
     return element.get(name) if element is not None else None
 
 def parse_timetable(xml_bytes: bytes, eva: int) -> tuple[str | None, list[dict]]:
@@ -231,7 +239,9 @@ def parse_timetable(xml_bytes: bytes, eva: int) -> tuple[str | None, list[dict]]
     return station_name, rows
 
 def explain_status(status: int) -> str:
-    """Human-readable hints for the most common HTTP errors."""
+    """
+    Human-readable hints for the most common HTTP errors.
+    """
     hints = {
         401: "credentials wrong (check DB_CLIENT_ID / DB_API_KEY in .env)",
         403: "application not subscribed to the Timetables API",
@@ -245,7 +255,9 @@ def explain_status(status: int) -> str:
 # --- MODES ---
 
 def run_collect(cfg: dict) -> None:
-    """Normal run: fetch plan slices + changes for every station and upsert them."""
+    """
+    Normal run: fetch plan slices + changes for every station and upsert them.
+    """
     session = build_session(cfg)
     run_started = datetime.now(TZ)
     log.info("Run started at %s", run_started.isoformat(timespec="seconds"))
@@ -272,7 +284,9 @@ def run_collect(cfg: dict) -> None:
     log.info("Run finished")
 
 def collect_one(cur, session, run_started, endpoint, eva, path, slot, upsert_sql) -> None:
-    """Fetch one endpoint, upsert its rows and write one ingestion_log entry."""
+    """
+    Fetch one endpoint, upsert its rows and write one ingestion_log entry.
+    """
     status, n_rows, error = None, None, None
 
     try:

@@ -1,4 +1,4 @@
-"""
+r"""
 Fetch Samples - Look at the Raw Data
 
 First contact with the DB Timetables API. Downloads raw API responses (/plan & /fchg) for all stations and saves them unchanged as XML files in samples/. 
@@ -77,7 +77,9 @@ def create_session() -> requests.Session:
     return session
 
 def get(session: requests.Session, path: str) -> requests.Response | None:
-    """GET one endpoint, print a hint on errors, return the response only if it was successful."""
+    """
+    GET one endpoint, print a hint on errors, return the response only if it was successful.
+    """
     response = session.get(f"{BASE_URL}/{path}", timeout = 30)      # Timeout: give up after 30s without a response instead of waiting forever.
     time.sleep(REQUEST_PAUSE_SEC)
 
@@ -89,7 +91,9 @@ def get(session: requests.Session, path: str) -> requests.Response | None:
     return response
 
 def save(response: requests.Response, filename: str) -> Path:
-    """Write the raw response bytes to samples/<filename>: a 1:1 copy, nothing changed."""
+    """
+    Write the raw response bytes to samples/<filename>: a 1:1 copy, nothing changed.
+    """
     SAMPLES_DIR.mkdir(exist_ok = True)
     path = SAMPLES_DIR / filename
     path.write_bytes(response.content)
@@ -99,7 +103,9 @@ def save(response: requests.Response, filename: str) -> Path:
 # --- MODES ---
 
 def search_station(session: requests.Session, pattern: str) -> None:
-    """Call /station/{pattern} and list all matches with their EVA number."""
+    """
+    Call /station/{pattern} and list all matches with their EVA number.
+    """
     response = get(session, f"station/{quote(pattern)}")
 
     if response is None:
@@ -117,7 +123,9 @@ def search_station(session: requests.Session, pattern: str) -> None:
         print(f"  EVA {station.get('eva')}  {station.get('name')}")
 
 def fetch_samples(session: requests.Session, hour: int | None) -> None:
-    """Save one /plan and one /fchg response per station."""
+    """
+    Save one /plan and one /fchg response per station.
+    """
     now = datetime.now(TZ)
     date = f"{now:%y%m%d}"          # e.g. 261020
     hour = now.hour if hour is None else hour
@@ -144,7 +152,7 @@ def fetch_samples(session: requests.Session, hour: int | None) -> None:
             root = ET.fromstring(response.content)
             print(f"  fchg  -> {path}  {len(root.findall('s'))} stops with changes")
 
-        print(f"\nNext: python ingestion\\inspect_xml.py {SAMPLES_DIR}\\*.xml")
+    print(f"\nNext: python ingestion\\inspect_xml.py {SAMPLES_DIR}\\*.xml")
  
  
 def main() -> None:

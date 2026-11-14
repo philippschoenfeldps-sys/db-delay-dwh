@@ -1,4 +1,4 @@
-"""
+r"""
 Inspect XML - Build an Inventory of All Fields
 
 Read saved API responses from /samples and lists every element/attribute that occurs, grouped by endpoint (plan, fchg, station).
@@ -29,7 +29,9 @@ from pathlib import Path
 MAX_EXAMPLES = 3
 
 def walk(element, path, stats):
-    """Recursively visit an element and all its children, recording every attribute."""
+    """
+    Recursively visit an element and all its children, recording every attribute.
+    """
     for name, value in element.attrib.items():
         key = f"{path}@{name}" if path else f"@{name}"
         stats[key]["count"] += 1
@@ -40,7 +42,9 @@ def walk(element, path, stats):
         walk(child, child_path, stats)
   
 def new_group():
-    """Statistics for one endpoint: number of files, number of stops, attribute stats."""
+    """
+    Statistics for one endpoint: number of files, number of stops, attribute stats.
+    """
     return {
         "files": 0,
         "stops": 0,
@@ -56,7 +60,7 @@ def main() -> None:
     if not files:
         sys.exit("No files found.")
  
-    # group by endpoint = first part of the file name (plan_..., fchg_..., station_...)
+    # Group by endpoint = first part of the file name (plan_..., fchg_..., station_...)
     groups = defaultdict(new_group)
 
     for file in files:
@@ -64,7 +68,7 @@ def main() -> None:
         group = groups[Path(file).name.split("_")[0]]
         group["files"] += 1
         group["stops"] += len(root.findall("s"))
-        walk(root, "", group["attrs"])   # root attributes appear as "@station" etc.
+        walk(root, "", group["attrs"])          # Root attributes appear as "@station" etc.
  
     for endpoint, group in sorted(groups.items()):
         stops = group["stops"]
@@ -75,7 +79,7 @@ def main() -> None:
         for key in sorted(group["attrs"]):
             info = group["attrs"][key]
 
-            # Root attributes (e.g. @station) occur once per file, a share makes no sense
+            # Root attributes (e.g. @station) occur once per file.
             share = f"{100 * info['count'] / stops:.0f} %" if stops and not key.startswith("@") else "-"
             examples = " | ".join(v[:25] for v in sorted(info["values"])[:MAX_EXAMPLES])
             print(f"{key:<20}{info['count']:>7}{share:>9}{len(info['values']):>10}   {examples}")
