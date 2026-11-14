@@ -30,7 +30,7 @@ Each phase includes guiding questions, key tasks and a deliverable.
 
 I act as a junior data analyst at a business intelligence consultancy. The client is the **Bayerische Eisenbahngesellschaft (BEG)**, which plans, finances and monitors all regional rail passenger services in Bavaria on behalf of the Bavarian State Ministry. BEG contracts the train operators, evaluates their quality reports, checks its quality standards and uses financial incentives to motivate operators on service quality and punctuality ([StMB](https://stmb.bayern.de/vum/schiene/nahverkehr/index.php)).
  
-**The real-world gap.** BEG rewards or penalises operators based on a published service quality ranking. This ranking rates only what operators control directly, such as cleanliness, passenger information, equipment and complaint handling. Punctuality and cancellations are deliberately left out and recorded in a separate system ([Railway PRO](https://railwaypro.com/wp/?p=123538).
+**The real-world gap.** BEG rewards or penalises operators based on a published service quality ranking. This ranking rates only what operators control directly, such as cleanliness, passenger information, equipment and complaint handling. Punctuality and cancellations are deliberately left out and recorded in a separate system ([Railway PRO](https://railwaypro.com/wp/?p=123538)).
 
 The reason is that a delay can be caused either by the operator (e.g. staff shortages, broken train) or by the infrastructue (e.g. signal failure, track works). A punctuality figure mixes both cases. Therefore, basing bonuses or penalties on it would also punish operators for problems they cannot control.
 
@@ -122,12 +122,108 @@ The questions follow the **SMART** methodology: specific, measurable, action-ori
 
 ## 2. Prepare
 
-*To be completed. Guiding questions from the roadmap:*
-- Where is the data located, and how is it organised?
-- Are there issues with bias or credibility? Does the data **ROCCC**?
-- How are licensing, privacy, security and accessibility addressed?
-- How was the data's integrity verified?
-- How does it help answer the question? Are there problems with the data?
+### 2.1 Data source
+
+| Item | Description |
+|---|---|
+| Source | Deutsche Bahn, **DB Timetables API v1**, via the DB API Marketplace (free plan, registration required) |
+| Endpoints used | `/plan` (planned stops for one hour) and `/fchg` (all known real-time changes for a station) |
+| Format | XML, one `<s>` element per stop of a train at a station |
+| Stations | Regensburg, München, Nürnberg, Hof, Landshut, Ingolstadt (all Hbf), identified by their EVA numbers |
+| Collection | own Python collector (`ingestion/collector.py`), run hourly via Windows Task Scheduler |
+| Period | 20 Oct - 6 Nov 2026 (data frozen) |
+| Licence | Creative Commons Attribution 4.0 (CC BY 4.0), attribution: Deutsche Bahn AG |
+
+**Why the data had to be collected?** The API only returns the current day and the next hours. It keeps no history, so a dataset for a period can only be built by collecting it continuously.
+
+### 2.2 How the data is stored and organised
+
+DB Timetables API (XML) → collector.py (Python) → staging (raw, PostgreSQL 17 in Docker) → core (cleaned view, PostgreSQL 17 in Docker) → analysis
+
+| Layer | Object | Organisation |
+|---|---|---|
+| Raw samples | `samples/*.xml` | unchanged API responses used to explore the structure |
+| Staging | `staging.stg_plan`, `staging.stg_changes` | one row per stop and station, values as delivered (text), full original XML kept in `raw_xml` |
+| Staging | `staging.ingestion_log` | one row per API request (status, rows, errors) |
+| Core | `core.stops` (view) | one row per stop: planned vs. actual times, delays, cancellation, flags |
+
+The data is structured and in long format (one row per observation). Plan and real-time changes are linked by the key `(station, stop_id)`, a relational design with a composite primary key. All fields are documented in `docs/DATA_DICTIONARY.md`.
+
+### 2.3 Size and completeness
+
+| Measure | Value |
+|---|---|
+| Calendar days | 18 (20 Oct - 6 Nov 2026), data on 17 days (1 Nov missing) |
+| Stops | 25,106 |
+| Trips | 2,945 |
+| Collector runs / API requests | 369 / 8,852 |
+| Failed requests | 1 (0.01 %) → a network timeout, logged and skipped |
+| Stops with real-time data | 97.3 % |
+
+Coverage was uneven, because the collector ran on a laptop that was not always switched on:
+
+| Coverage | Days |
+|---|---|
+| near-complete (20-24 hours) | 22, 23, 24, 25 Oct (Thu–Sun) |
+| partial (7-17 hours) | 21, 26-30 Oct, 2-5 Nov |
+| very low (<= 5 hours) | 20 Oct (start), 31 Oct, 6 Nov (end) |
+| none | 1 Nov |
+
+| Time of day | Days with data |
+|---|---|
+| 5–8 a.m. (morning peak) | 4 |
+| 9-11 a.m. | 8-9 |
+| 12 a.m. - 6 p.m. | 12-15 |
+| 7-11 p.m. | 7-14 |
+
+### 2.4 Credibility: does the data ROCCC?
+
+| Criterion | Assessment | Rating |
+|---|---|---|
+| Reliable | operational data from Deutsche Bahn's own systems, the same source as station displays. Limitation: the stored delay is the last value seen, up to one hour before the train passed. | Mostly met |
+| Original | first-party data, collected directly from the API; the raw XML of every stop is kept | Met |
+| Comprehensive | covers six major stations, not the whole network; collection gaps (see 2.3); no reliable delay causes | Partly met |
+| Current | October/November 2026; reflects current operations including ongoing construction work | Met for this period |
+| Cited | official API of Deutsche Bahn AG, documented in the DB API Marketplace, licence CC BY 4.0 | Met |
+
+### 2.5 Bias
+
+- Sampling bias (time): the morning peak (5-8 a.m.) is covered on only 4 days, afternoons on 15. Results by time of day are weighted towards the afternoon.
+- Sampling bias (days): only three weekend days, one of them partial. Weekday comparisons are limited.
+- Selection of stations: six large hubs. Smaller stations, where delays may behave differently, are not included.
+- Seasonal effects: 18 autumn days. Construction work (e.g. at Hof) and weather in this period influence the results.
+
+**How the bias is handled.** Every result in the analysis is reported together with its number of stops (`n`), time-of-day results are checked against the four near-complete days, and conclusions are limited to the observed period.
+
+### 2.6 Licensing, privacy, security, accessibility
+
+| Aspect | How it is addressed |
+|---|---|
+| Licensing | CC BY 4.0: free use with attribution to Deutsche Bahn AG |
+| Privacy | no personal data: only timetables, trains and stations |
+| Security | API keys and database password are stored in `.env`, which is excluded from version control (`.gitignore`); a template without secrets is provided (`.env.example`) |
+| Accessibility | code, SQL and documentation are public on GitHub; the collected data itself is not published, but can be re-collected with the same scripts |
+| Backup | full database dump (`pg_dump`) stored locally, so the frozen dataset cannot be lost |
+
+### 2.7 Data integrity checks during collection
+
+| Check | Result |
+|---|---|
+| Duplicates | prevented by design: primary key `(eva, stop_id)` plus upsert, so re-fetching a stop updates it instead of duplicating it |
+| Failed requests | logged in `staging.ingestion_log`: 1 of 8,852 |
+| Correct stations | station names returned by the API compared with the expected names; one wrong EVA number found and fixed (8000183 is Ingolstadt, not Hof) |
+| Structure | all attributes inventoried with `inspect_xml.py` before the tables were designed |
+
+### 2.8 Known problems with the data
+
+| Problem | Effect | Handling |
+|---|---|---|
+| Collection gaps | fewer observations on some days and hours | report `n`, compare with near-complete days |
+| Snapshot of delays | final delay may differ from the last value seen | documented as a limitation |
+| Partial cancellations | a stop counts as cancelled if arrival or departure is cancelled | definition stated in section 1.7 |
+| Daylight saving time (25 Oct) | times are stored without time zone; a few night trains around 2-3 a.m. may show delays off by 60 minutes | negligible share of stops; documented |
+| Station names in routes vary (e.g. "München Hbf Gl.27-36") | origin/destination names are not fully standardised | cleaned where needed in the analysis |
+| Construction at Hof | lines RB97, RE31, RE2 are 100 % cancelled at Hof | analysed separately in Q5 |
 
 ---
 
