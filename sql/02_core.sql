@@ -12,7 +12,7 @@
 --  1. Times are German local time without time zone (as delivered by the API).
 --  2. No known changes for a stop -> the train is assumed to run as planned.
 --     has_change_record shows where this assumption was needed.
---  3. One time = less than 6 minutes late (definition used by Deutsche Bahn).
+--  3. On time = less than 6 minutes late (definition used by Deutsche Bahn).
 --     Cancelled stops have no delay and are not counted as on time or late.
 --  4. Long-distance trains have no line in the API. Line falls back to category + number (e.g., 'ICE 1000').
 

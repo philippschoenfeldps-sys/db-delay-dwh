@@ -229,3 +229,6 @@ logs/
 
 # Personal SQL playground
 sql/scratch.sql
+
+# Data dump (Docker Backup)
+data/

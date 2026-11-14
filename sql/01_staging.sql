@@ -22,7 +22,7 @@
 CREATE SCHEMA IF NOT EXISTS staging;
 
 
--- Planned stops from /plan{eval}/{yyMMdd}/{HH}
+-- Planned stops from /plan/{eva}/{yyMMdd}/{HH}
 
 CREATE TABLE IF NOT EXISTS staging.stg_plan (
     -- identification
