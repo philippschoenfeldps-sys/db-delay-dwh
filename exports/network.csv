@@ -1,0 +1,15 @@
+element_type,element_name,station_a,station_b,latitude,longitude,to_latitude,to_longitude,stops,on_time_share,cancellation_rate,journeys,minutes_lost,minutes_lost_a_to_b,minutes_lost_b_to_a
+station,Hof,Hof,,50.3082,11.9228,,,2497,0.829,0.097,,,,
+station,Ingolstadt,Ingolstadt,,48.7442,11.4373,,,2004,0.756,0.017,,,,
+station,Landshut,Landshut,,48.5475,12.1375,,,1874,0.788,0.007,,,,
+station,München,München,,48.1403,11.5600,,,2777,0.760,0.016,,,,
+station,Nürnberg,Nürnberg,,49.4460,11.0825,,,8673,0.855,0.015,,,,
+station,Regensburg,Regensburg,,49.0118,12.0998,,,2748,0.856,0.015,,,,
+section,Hof - Nürnberg,Hof,Nürnberg,50.3082,11.9228,49.4460,11.0825,,,,157,8.8,10.1,7.7
+section,Hof - Regensburg,Hof,Regensburg,50.3082,11.9228,49.0118,12.0998,,,,98,3.7,2.1,5.0
+section,Ingolstadt - München,Ingolstadt,München,48.7442,11.4373,48.1403,11.5600,,,,629,2.4,2.0,2.8
+section,Ingolstadt - Nürnberg,Ingolstadt,Nürnberg,48.7442,11.4373,49.4460,11.0825,,,,356,0.9,-0.2,1.9
+section,Ingolstadt - Regensburg,Ingolstadt,Regensburg,48.7442,11.4373,49.0118,12.0998,,,,370,1.8,1.2,2.5
+section,Landshut - München,Landshut,München,48.5475,12.1375,48.1403,11.5600,,,,595,2.9,2.2,3.3
+section,Landshut - Regensburg,Landshut,Regensburg,48.5475,12.1375,49.0118,12.0998,,,,738,0.4,-1.1,2.0
+section,Nürnberg - Regensburg,Nürnberg,Regensburg,49.4460,11.0825,49.0118,12.0998,,,,443,3.2,3.0,3.4
