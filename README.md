@@ -1,6 +1,6 @@
-# db-delay-dwh → Regional Rail Punctuality in Bavaria
+# db-delay-dwh 
 
-**How punctual is regional rail in Bavaria? Where does it fall short?** A data warehouse for Deutsche Bahn real-time data. It is built with Python, PostgreSQL and Docker. The data is analysed with SQL and visualised in Tableau Public.
+**Regional Rail Punctuality in Bavaria. How punctual is regional rail in Bavaria? Where does it fall short?** A data warehouse for Deutsche Bahn real-time data. It is built with Python, PostgreSQL and Docker. The data is analysed with SQL and visualised in Tableau Public.
 
 Own case study for the capstone of the Google Data Analytics Professional Certificate. Stakeholder: Bayerische Eisenbahngesellschaft (BEG), which contracts regional rail in Bavaria.
 
@@ -8,7 +8,6 @@ Own case study for the capstone of the Google Data Analytics Professional Certif
 
 [![Dashboard: Regional Rail Punctuality in Bavaria](docs/images/Dashboard_overview.png)](https://public.tableau.com/app/profile/philipp.sch.nfeld/viz/bahn_punctuality_dashboard/Whereandwhichlines)
 
----
 
 ## Key findings
 
@@ -23,7 +22,6 @@ Data: 25,106 stops at six main stations (München, Nürnberg, Regensburg, Ingols
 
 The full analysis, following the six phases Ask, Prepare, Process, Analyze, Share and Act, is in the [case study](docs/CASE_STUDY.md).
 
----
 
 ## Architecture
 
@@ -54,7 +52,6 @@ The API only returns the current day, so the history had to be collected continu
 | Visualisation | Tableau Public: calculated fields, parameters, dual-layer map, dashboard actions |
 | Documentation | case study, data dictionary, changelog, Git |
 
----
 
 ## Repository structure
 
@@ -81,7 +78,6 @@ The API only returns the current day, so the history had to be collected continu
 └── .env.example              template for credentials
 ```
 
----
 
 ## How to reproduce
 
@@ -109,7 +105,6 @@ docker exec -i bahn-postgres psql -U bahn -d bahn_dwh < sql\04_mart.sql
 
 Step 4 can be repeated at any time. The CSV export commands are in [`exports/README.md`](exports/README.md). A new collection covers a new period, so the results will differ from this case study.
 
----
 
 ## Data source and licence
 
