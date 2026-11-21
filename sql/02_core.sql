@@ -209,7 +209,7 @@ SELECT
         ELSE                                                            'delayed > 60'
     END AS delay_category,
 
-    -- PLAUSABILITY --
+    -- PLAUSIBILITY --
 
     -- flag delays that are technically possible in the data but not credible (found in the Process verification, see docs/CHANGELOG.md):
     --      a) departing more than 5 min early: trains do not leave before schedule.

@@ -1,7 +1,7 @@
 # Docker Compose - Run PostgreSQL locally
 
 # Independent of the data: this only describes "a PostgreSQL 17 server with these credentials."
-# This table come from sql/01_staging.sql.
+# The tables come from sql/01_staging.sql.
 
 #   docker compose up -d    start (first time: downloads the image)
 #   docker compose ps       status
