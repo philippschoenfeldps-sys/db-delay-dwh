@@ -6,6 +6,8 @@ Own case study for the capstone of the Google Data Analytics Professional Certif
 
 **[View the interactive dashboard on Tableau Public](https://public.tableau.com/app/profile/philipp.sch.nfeld/viz/bahn_punctuality_dashboard/Whereandwhichlines)**
 
+[![Dashboard: Regional Rail Punctuality in Bavaria](docs/images/Dashboard_overview.png)](https://public.tableau.com/app/profile/philipp.sch.nfeld/viz/bahn_punctuality_dashboard/Whereandwhichlines)
+
 ---
 
 ## Key findings
