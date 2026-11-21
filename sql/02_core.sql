@@ -15,6 +15,8 @@
 --  3. On time = less than 6 minutes late (definition used by Deutsche Bahn).
 --     Cancelled stops have no delay and are not counted as on time or late.
 --  4. Long-distance trains have no line in the API. Line falls back to category + number (e.g., 'ICE 1000').
+--  5. Implausible delays are kept but flagged (is_suspect_delay): 
+--     early departures, arrivals more than 30 min early, and the night of the DST change (25 Oct 2026).
 
 -- Run (cmd, from the repo root):
 --  docker exec -i bahn-postgres psql -U bahn -d bahn_dwh < sql\02_core.sql
@@ -69,8 +71,8 @@ joined AS (
 
         -- TRIP --
 
-        -- split the stop id: <trip id>-<origin departure>-<stop index>
-        regexp_replace(p.stop_id, '-\d+-\d+$', '')                                          AS trip_id,
+        -- trip id + origin departure = one journey on one day
+        regexp_replace(p.stop_id, '-\d+$', '')                                              AS trip_id,
         to_timestamp(substring(p.stop_id FROM '-(\d{10})-\d+$'), 'YYMMDDHH24MI')::timestamp AS trip_started_at,
         substring(p.stop_id FROM '-(\d+)$')::int                                            AS stop_index,
         
@@ -207,6 +209,22 @@ SELECT
         ELSE                                                            'delayed > 60'
     END AS delay_category,
 
+    -- PLAUSABILITY --
+
+    -- flag delays that are technically possible in the data but not credible (found in the Process verification, see docs/CHANGELOG.md):
+    --      a) departing more than 5 min early: trains do not leave before schedule.
+    --      b) arriving more than 30 min early: far beyond normal timetable buffers.
+    --      c) night of the DST change (25 Oct 2026): times are stored without time zone, so delays can be off by 60 min
+    -- rows are kept, analyses exclude flagged delays from delay metrics
+    COALESCE(
+        departure_delay_min < -5
+        OR arrival_delay_min < -30
+        OR (planned_event_at >= '2026-10-25 01:00'
+            AND planned_event_at <  '2026-10-25 04:00'
+            AND GREATEST(abs(arrival_delay_min), abs(departure_delay_min)) >= 30),      -- returns larger of two values and ignores NULL
+        false
+    ) AS is_suspect_delay,
+    
     -- STATUS & FLAGS
     arrival_status,
     departure_status,
